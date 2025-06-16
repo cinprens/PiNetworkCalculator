@@ -117,27 +117,27 @@ class PiCoinApp:
     def get_pi_price(self):
         url = "https://api.coingecko.com/api/v3/simple/price?ids=pi-network&vs_currencies=usd"
         try:
-            response = requests.get(url).json()
+            response = requests.get(url, timeout=10).json()
             return response.get("pi-network", {}).get("usd", 0)
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Error fetching Pi Coin price: {e}")
             return 0
     
     def get_usd_to_try(self):
         url = "https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=try"
         try:
-            response = requests.get(url).json()
+            response = requests.get(url, timeout=10).json()
             return response.get("usd", {}).get("try", 0)
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Error fetching USD/TRY rate: {e}")
             return 0
     
     def get_usd_to_currency(self, currency_code):
         url = f"https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies={currency_code}"
         try:
-            response = requests.get(url).json()
+            response = requests.get(url, timeout=10).json()
             return response.get("usd", {}).get(currency_code, 0)
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Error fetching USD/{currency_code.upper()} rate: {e}")
             return 0
     
