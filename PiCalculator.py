@@ -71,6 +71,9 @@ class PiCoinApp:
         
         self.total_custom_label = ttk.Label(self.earnings_frame, text="Total Earnings in Custom Currency: N/A", font=("Arial", 18, "bold"))
         self.total_custom_label.grid(row=8, column=0, columnspan=4, padx=5, pady=5, sticky="w")
+
+        self.locked_pi_label = ttk.Label(self.earnings_frame, text="Locked Pi: fetching...", font=("Arial", 12, "bold"))
+        self.locked_pi_label.grid(row=9, column=0, columnspan=4, padx=5, pady=5, sticky="w")
         
         # ----- Price Chart Section -----
         self.graph_frame = ttk.LabelFrame(master, text="Pi Coin Price Chart")
@@ -93,6 +96,7 @@ class PiCoinApp:
         self.refresh_earnings()
         # Initial price update for earnings calculation
         self.update_prices_for_earnings()
+        self.update_locked_pi()
     
     # ----- Data Persistence -----
     def load_price_history(self):
@@ -140,6 +144,15 @@ class PiCoinApp:
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"Error fetching USD/{currency_code.upper()} rate: {e}")
             return 0
+
+    def get_locked_pi(self):
+        url = "https://api.minepi.com/wallet/locked"
+        try:
+            response = requests.get(url, timeout=10).json()
+            return response.get("locked_balance", 0)
+        except requests.exceptions.RequestException as e:
+            print(f"Kitli Pi verisi çekilemedi: {e}")
+            return 0
     
     # Update prices used in earnings calculation (every hour)
     def update_prices_for_earnings(self):
@@ -152,6 +165,13 @@ class PiCoinApp:
                 self.custom_usd_rate = self.get_usd_to_currency(code)
         threading.Thread(target=task).start()
         self.master.after(3600000, self.update_prices_for_earnings)  # update every hour
+
+    def update_locked_pi(self):
+        def task():
+            locked = self.get_locked_pi()
+            self.master.after(0, lambda: self.locked_pi_label.config(text=f"Locked Pi: {locked} Pi"))
+        threading.Thread(target=task).start()
+        self.master.after(3600000, self.update_locked_pi)
     
     # ----- Earnings Calculation -----
     def update_earnings(self):
